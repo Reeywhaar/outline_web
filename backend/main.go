@@ -20,7 +20,7 @@ func main() {
 
 	addr := "127.0.0.1:" + os.Getenv("PORT")
 	log.Printf("Starting server at %s", addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(http.ListenAndServe(addr, logRequest(http.DefaultServeMux)))
 }
 
 //
@@ -47,4 +47,11 @@ func handleApiData(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsd)
+}
+
+func logRequest(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+		handler.ServeHTTP(w, r)
+	})
 }
