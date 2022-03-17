@@ -33,6 +33,7 @@ jobs:
           mv templates outline_web/templates
           mv static outline_web/static
           mv Readme.md outline_web/readme.md
+          mv LICENCE outline_web/LICENCE
           zip outline_web.zip -r outline_web
         shell: bash
       - name: Create Release
