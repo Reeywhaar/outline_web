@@ -1,3 +1,3 @@
-module vyrtsev.com/outline-web
+module github.com/reeywhaar/outline_web
 
 go 1.17

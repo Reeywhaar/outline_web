@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "go build -o bin/main main.gos",
-    "build:linux": "GOOS=linux GOARCH=amd64 go build -o bin/main.linux.amd64 main.go",
+    "build": "go build -o bin/main backend/main.go",
+    "build:linux": "GOOS=linux GOARCH=amd64 go build -o bin/main.linux.amd64 backend/main.go",
     "build:front": "node esbuild.js",
     "watch:front": "WATCH=1 node esbuild.js",
     "test": "echo \"Error: no test specified\" && exit 1"
