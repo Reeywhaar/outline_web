@@ -1,0 +1,4 @@
+node_modules
+static/dist
+bin
+private
