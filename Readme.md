@@ -6,7 +6,7 @@ Minimalistic web interface for Outline
 
 # Installation (with nginx)
 
-- Download archive
+- [Download archive](https://github.com/Reeywhaar/outline_web/releases/latest/download/outline_web.zip)
 - Unpack it to, /out/outline_web (for example)
 - Create systemd service:
   - Create service file: `touch /lib/systemd/system/outline_web.service`
