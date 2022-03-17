@@ -1,24 +1,20 @@
 import React, { useEffect, useState, FunctionComponent } from "react";
+import { Api, ApiData } from "../../services/api";
 import { sleep } from "../../utils";
 
 import classes from "./App.module.scss";
 
 export const App: FunctionComponent = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<ApiData | null>(null);
   const [err, setError] = useState(null);
 
-  const total = data.reduce((c, x) => c + x.usage, 0);
+  const total = data?.users.reduce((c, x) => c + x.usage, 0) ?? 0;
 
   useEffect(() => {
+    const api = new Api();
     const getData = async (abortSignal: AbortSignal) => {
-      const resp = await fetch("/api/data", { signal: abortSignal });
       try {
-        if (resp.status >= 400) {
-          setError(await resp.text());
-        } else {
-          setError(null);
-          setData(await resp.json());
-        }
+        setData(await api.fetchData(abortSignal));
       } catch (e) {
         setError(e.message);
       }
@@ -40,9 +36,9 @@ export const App: FunctionComponent = () => {
 
   return (
     <div className={classes.root}>
-      <h1>Outline stats</h1>
+      <h1>{data ? data.name : "Loading..."}</h1>
 
-      {data.map((item) => (
+      {data?.users.map((item) => (
         <div
           className={classes.item}
           key={item.name}
@@ -54,7 +50,7 @@ export const App: FunctionComponent = () => {
           : {humanSize(item.usage)}
         </div>
       ))}
-      {!!data.length && (
+      {!!data?.users.length && (
         <>
           <div className={classes.spacer}></div>
           <div title={`Total: ${total}`}>

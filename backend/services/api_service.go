@@ -11,14 +11,26 @@ type ApiService struct {
 	Endpoint string
 }
 
-func (cnt *ApiService) GetData() ([]ViewDataUser, error) {
+func (cnt *ApiService) GetData() (ApiServiceData, error) {
+	var serverInfo ServerInfoResponse
 	var accessKeys AccessKeysResponse
 	var metrics MetricsResponse
 	var err error
 	var errMutex sync.Mutex
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
+
+	go func() {
+		var lerr error
+		serverInfo, lerr = cnt.getServerInfo()
+		if lerr != nil {
+			errMutex.Lock()
+			err = lerr
+			errMutex.Unlock()
+		}
+		wg.Done()
+	}()
 
 	go func() {
 		var lerr error
@@ -45,39 +57,44 @@ func (cnt *ApiService) GetData() ([]ViewDataUser, error) {
 	wg.Wait()
 
 	if err != nil {
-		return nil, err
+		return ApiServiceData{}, err
 	}
 
-	var items []ViewDataUser
+	var users []ApiServiceDataUser
 
 	for k := range accessKeys.AccessKeys {
 		key := accessKeys.AccessKeys[k]
-		item := ViewDataUser{
+		item := ApiServiceDataUser{
 			Name:  key.Name,
 			Usage: metrics.BytesTransferredByUserId[key.ID],
 		}
-		items = append(items, item)
+		users = append(users, item)
 	}
 
-	return items, nil
+	data := ApiServiceData{
+		Name:     serverInfo.Name,
+		ServerID: serverInfo.ServerID,
+		Users:    users,
+	}
+
+	return data, nil
+}
+
+func (cnt *ApiService) getServerInfo() (ServerInfoResponse, error) {
+	var data ServerInfoResponse
+	err := cnt.callEndpoint("/server", &data)
+
+	if err != nil {
+		return ServerInfoResponse{}, err
+	}
+
+	return data, nil
 }
 
 func (cnt *ApiService) getMetrics() (MetricsResponse, error) {
-	url := cnt.Endpoint + "/metrics/transfer"
-	resp, err := http.Get(url)
-	if err != nil {
-		return MetricsResponse{}, err
-	}
-	defer resp.Body.Close()
-
-	respString, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return MetricsResponse{}, err
-	}
-
 	var data MetricsResponse
+	err := cnt.callEndpoint("/metrics/transfer", &data)
 
-	err = json.Unmarshal(respString, &data)
 	if err != nil {
 		return MetricsResponse{}, err
 	}
@@ -86,26 +103,40 @@ func (cnt *ApiService) getMetrics() (MetricsResponse, error) {
 }
 
 func (cnt *ApiService) getAccessKeys() (AccessKeysResponse, error) {
-	url := cnt.Endpoint + "/access-keys"
-	resp, err := http.Get(url)
-	if err != nil {
-		return AccessKeysResponse{}, err
-	}
-	defer resp.Body.Close()
-
-	respString, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return AccessKeysResponse{}, err
-	}
-
 	var data AccessKeysResponse
+	err := cnt.callEndpoint("/access-keys", &data)
 
-	err = json.Unmarshal(respString, &data)
 	if err != nil {
 		return AccessKeysResponse{}, err
 	}
 
 	return data, nil
+}
+
+func (cnt *ApiService) callEndpoint(endpoint string, data interface{}) error {
+	url := cnt.Endpoint + endpoint
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	respString, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(respString, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type ServerInfoResponse struct {
+	Name     string `json:"name"`
+	ServerID string `json:"serverId"`
 }
 
 type MetricsResponse struct {
@@ -124,7 +155,13 @@ type AccessKeysResponse struct {
 	AccessKeys []AccessKeyData `json:"accessKeys"`
 }
 
-type ViewDataUser struct {
+type ApiServiceData struct {
+	Name     string               `json:"name"`
+	ServerID string               `json:"server_id"`
+	Users    []ApiServiceDataUser `json:"users"`
+}
+
+type ApiServiceDataUser struct {
 	Name  string `json:"name"`
 	Usage int    `json:"usage"`
 }
