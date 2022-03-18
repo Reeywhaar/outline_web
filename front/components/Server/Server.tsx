@@ -34,19 +34,11 @@ export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
     };
   }, []);
 
-  if (!data) {
-    return (
-      <div className={classes.root}>
-        <h1>Loading...</h1>
-      </div>
-    );
-  }
-
   return (
     <div className={classes.root}>
-      <h1>{data.name}</h1>
+      <h1>{data ? data.name : "Loading..."}</h1>
 
-      {data.users.map((item) => (
+      {data?.users.map((item) => (
         <div
           className={classes.item}
           key={item.name}
@@ -58,7 +50,7 @@ export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
           : {humanSize(item.usage)}
         </div>
       ))}
-      {!!data.users.length && (
+      {!!data?.users.length && (
         <>
           <div className={classes.spacer}></div>
           <div title={`Total: ${total}`}>

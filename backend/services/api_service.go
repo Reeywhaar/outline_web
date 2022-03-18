@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -60,7 +61,7 @@ func (cnt *ApiService) GetData() (ApiServiceData, error) {
 		return ApiServiceData{}, err
 	}
 
-	var users []ApiServiceDataUser
+	var users = make([]ApiServiceDataUser, 0)
 
 	for k := range accessKeys.AccessKeys {
 		key := accessKeys.AccessKeys[k]
@@ -120,6 +121,10 @@ func (cnt *ApiService) callEndpoint(endpoint string, data interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("failed with status %d", resp.StatusCode)
+	}
 
 	respString, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
