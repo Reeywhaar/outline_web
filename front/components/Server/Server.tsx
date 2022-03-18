@@ -1,16 +1,20 @@
 import React, { useEffect, useState, FunctionComponent } from "react";
 import { Api, ServerResponse } from "@app/services/api";
 import { sleep } from "@app/utils";
+import { useVisible } from "@app/hooks/useVisible";
 
 import classes from "./Server.module.scss";
 
 export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
   const [data, setData] = useState<ServerResponse | null>(null);
   const [err, setError] = useState(null);
+  const visible = useVisible();
 
   const total = data?.users.reduce((c, x) => c + x.usage, 0) ?? 0;
 
   useEffect(() => {
+    if (!visible) return;
+
     const api = new Api();
     const getData = async (abortSignal: AbortSignal) => {
       try {
@@ -32,7 +36,7 @@ export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
     return () => {
       abortController.abort();
     };
-  }, []);
+  }, [visible]);
 
   return (
     <div className={classes.root}>
