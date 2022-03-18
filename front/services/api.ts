@@ -1,4 +1,6 @@
-export type ApiData = {
+export type ServersResponse = number[];
+
+export type ServerResponse = {
   name: string;
   server_id: string;
   users: {
@@ -8,9 +10,16 @@ export type ApiData = {
 };
 
 export class Api {
-  async fetchData(abortSignal?: AbortSignal) {
-    const resp = await fetch("/api/data", { signal: abortSignal });
+  async fetchServers(abortSignal?: AbortSignal) {
+    const resp = await fetch("/api/servers", { signal: abortSignal });
     if (resp.status >= 400) throw new Error(await resp.text());
-    return (await resp.json()) as ApiData;
+    return (await resp.json()) as ServersResponse;
+  }
+  async fetchServer(id: number, abortSignal?: AbortSignal) {
+    const resp = await fetch(`/api/servers/${encodeURIComponent(id)}`, {
+      signal: abortSignal,
+    });
+    if (resp.status >= 400) throw new Error(await resp.text());
+    return (await resp.json()) as ServerResponse;
   }
 }
