@@ -1,6 +1,6 @@
 import React, { useEffect, useState, FunctionComponent } from "react";
-import { Api, ServerResponse } from "../../services/api";
-import { sleep } from "../../utils";
+import { Api, ServerResponse } from "@app/services/api";
+import { sleep } from "@app/utils";
 
 import classes from "./Server.module.scss";
 

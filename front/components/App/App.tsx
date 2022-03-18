@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from "react";
-import { Api, ServersResponse } from "../../services/api";
-import { sleep } from "../../utils";
+import { sleep } from "@app/utils";
+import { Api, ServersResponse } from "@app/services/api";
 import { Server } from "../Server/Server";
 
 export const App: FunctionComponent = () => {
