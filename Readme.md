@@ -47,6 +47,7 @@ WantedBy=multi-user.target
   	}
   }
   ```
+  - Replace %PUT_API_URL_FROM_OUTLINE_MANAGER_HERE% with api url obtained from server. To add multiple servers join urls with comma,
   - Enable conf `ln -sf /etc/nginx/sites-available/outline_web.conf /etc/nginx/sites-enabled/outline_web.conf`
   - Enable service and restart nginx:
   ```
