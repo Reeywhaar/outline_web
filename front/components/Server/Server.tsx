@@ -1,5 +1,6 @@
 import React, { useEffect, useState, FunctionComponent } from "react";
-import { Api, ServerResponse } from "@app/services/Api";
+import { ServerResponse } from "@app/services/Api";
+import { useAppContext } from "@app/providers/AppContext";
 import { sleep } from "@app/utils";
 import { useVisible } from "@app/hooks/useVisible";
 
@@ -8,6 +9,7 @@ import classes from "./Server.module.scss";
 export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
   const [data, setData] = useState<ServerResponse | null>(null);
   const [err, setError] = useState(null);
+  const { api } = useAppContext();
   const visible = useVisible();
 
   const total = data?.users.reduce((c, x) => c + x.usage, 0) ?? 0;
@@ -15,7 +17,6 @@ export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
   useEffect(() => {
     if (!visible) return;
 
-    const api = new Api();
     const getData = async (abortSignal: AbortSignal) => {
       try {
         setData(await api.fetchServer(id, abortSignal));
