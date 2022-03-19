@@ -19,6 +19,7 @@ export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
     const getData = async (abortSignal: AbortSignal) => {
       try {
         setData(await api.fetchServer(id, abortSignal));
+        setError(null);
       } catch (e) {
         setError(e.message);
       }
