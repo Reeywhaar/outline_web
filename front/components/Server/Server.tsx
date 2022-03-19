@@ -1,5 +1,5 @@
 import React, { useEffect, useState, FunctionComponent } from "react";
-import { Api, ServerResponse } from "@app/services/api";
+import { Api, ServerResponse } from "@app/services/Api";
 import { sleep } from "@app/utils";
 import { useVisible } from "@app/hooks/useVisible";
 
