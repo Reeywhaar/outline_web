@@ -114,7 +114,7 @@ func (cnt *ApiService) getAccessKeys() (AccessKeysResponse, error) {
 	return data, nil
 }
 
-func (cnt *ApiService) callEndpoint(endpoint string, data interface{}) error {
+func (cnt *ApiService) callEndpoint(endpoint string, data any) error {
 	url := cnt.Endpoint + endpoint
 	resp, err := http.Get(url)
 	if err != nil {
