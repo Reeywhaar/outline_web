@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/reeywhaar/outline_web/backend/controllers"
+	"github.com/reeywhaar/outline_web/backend/middlewares"
 )
 
 func main() {
@@ -17,13 +18,19 @@ func main() {
 
 	r := mux.NewRouter()
 
+	authMiddleware := middlewares.AuthMiddleware{}
+	authMiddleware.Init("/api/auth", os.Getenv("ADMIN_PASSWORD"))
+
 	r.HandleFunc("/", handleMain)
 
+	apiRouter := r.PathPrefix("/api").Subrouter()
+	apiRouter.Use(authMiddleware.Middleware)
 	apiController := controllers.ApiController{
 		Servers: strings.Split(os.Getenv("OUTLINE_API_URL"), ","),
 	}
-	r.HandleFunc("/api/servers", apiController.HandleServers)
-	r.HandleFunc("/api/servers/{id}", apiController.HandleServersID)
+	apiRouter.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {})
+	apiRouter.HandleFunc("/servers", apiController.HandleServers)
+	apiRouter.HandleFunc("/servers/{id}", apiController.HandleServersID)
 
 	http.Handle("/", r)
 
