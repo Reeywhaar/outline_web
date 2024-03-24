@@ -9,23 +9,33 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/reeywhaar/outline_web/backend/controllers"
+	"github.com/reeywhaar/outline_web/backend/middlewares"
 )
 
 func main() {
+	godotenv.Load()
+
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	r := mux.NewRouter()
+
+	authMiddleware := middlewares.AuthMiddleware{}
+	authMiddleware.Init("/api/auth", os.Getenv("ADMIN_PASSWORD"))
 
 	r.HandleFunc("/", handleMain)
 
 	servers := strings.Split(os.Getenv("OUTLINE_API_URL"), ",")
 
+	apiRouter := r.PathPrefix("/api").Subrouter()
+	apiRouter.Use(authMiddleware.Middleware)
 	apiController := controllers.ApiController{
 		Servers: servers,
 	}
-	r.HandleFunc("/api/servers", apiController.HandleServers)
-	r.HandleFunc("/api/servers/{id}", apiController.HandleServersID)
+	apiRouter.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {})
+	apiRouter.HandleFunc("/servers", apiController.HandleServers)
+	apiRouter.HandleFunc("/servers/{id}", apiController.HandleServersID)
 
 	http.Handle("/", r)
 
@@ -36,8 +46,12 @@ func main() {
 		bind_addr = "127.0.0.1"
 	}
 
-	addr := bind_addr + ":" + os.Getenv("PORT")
-	log.Printf("Starting server at %s", addr)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	addr := bind_addr + ":" + port
+	log.Printf("Starting server at http://%s", addr)
 	log.Fatal(http.ListenAndServe(addr, logRequest(http.DefaultServeMux)))
 }
 
