@@ -25,6 +25,7 @@ WorkingDirectory=/opt/outline_web
 ExecStart=/opt/outline_web/main
 Environment="PORT=12345"
 Environment="OUTLINE_API_URL=%PUT_API_URL_FROM_OUTLINE_MANAGER_HERE%"
+Environment="ADMIN_PASSWORD=%CREATE_SOME_PASSWORD%"
 
 [Install]
 WantedBy=multi-user.target
