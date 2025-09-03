@@ -19,8 +19,10 @@ func main() {
 
 	r.HandleFunc("/", handleMain)
 
+	servers := strings.Split(os.Getenv("OUTLINE_API_URL"), ",")
+
 	apiController := controllers.ApiController{
-		Servers: strings.Split(os.Getenv("OUTLINE_API_URL"), ","),
+		Servers: servers,
 	}
 	r.HandleFunc("/api/servers", apiController.HandleServers)
 	r.HandleFunc("/api/servers/{id}", apiController.HandleServersID)
@@ -29,7 +31,12 @@ func main() {
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
-	addr := "127.0.0.1:" + os.Getenv("PORT")
+	bind_addr := os.Getenv("ADDR")
+	if bind_addr == "" {
+		bind_addr = "127.0.0.1"
+	}
+
+	addr := bind_addr + ":" + os.Getenv("PORT")
 	log.Printf("Starting server at %s", addr)
 	log.Fatal(http.ListenAndServe(addr, logRequest(http.DefaultServeMux)))
 }
