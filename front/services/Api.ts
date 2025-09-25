@@ -1,3 +1,5 @@
+import { Sha256 } from "@aws-crypto/sha256-browser";
+
 export type AuthResponse = { success: boolean };
 export type ServersResponse = number[];
 
@@ -45,7 +47,9 @@ export class Api {
 
 async function makeHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8); // hash the message
+  const hasher = new Sha256();
+  hasher.update(msgUint8);
+  const hashBuffer = await hasher.digest(); // hash the message
   const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
   const hashHex = hashArray
     .map((b) => b.toString(16).padStart(2, "0"))
