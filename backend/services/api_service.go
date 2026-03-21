@@ -1,63 +1,52 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
-type ApiService struct {
+type apiService struct {
 	Endpoint string
+	ctx      context.Context
 }
 
-func (cnt *ApiService) GetData() (ApiServiceData, error) {
+func NewApiService(endpoint string, ctx context.Context) *apiService {
+	return &apiService{
+		Endpoint: endpoint,
+		ctx:      ctx,
+	}
+}
+
+func (cnt *apiService) GetData() (ApiServiceData, error) {
 	var serverInfo ServerInfoResponse
 	var accessKeys AccessKeysResponse
 	var metrics MetricsResponse
-	var err error
-	var errMutex sync.Mutex
 
-	var wg sync.WaitGroup
-	wg.Add(3)
-
-	go func() {
+	var wg errgroup.Group
+	wg.Go(func() error {
 		var lerr error
 		serverInfo, lerr = cnt.getServerInfo()
-		if lerr != nil {
-			errMutex.Lock()
-			err = lerr
-			errMutex.Unlock()
-		}
-		wg.Done()
-	}()
+		return lerr
+	})
 
-	go func() {
+	wg.Go(func() error {
 		var lerr error
 		accessKeys, lerr = cnt.getAccessKeys()
-		if lerr != nil {
-			errMutex.Lock()
-			err = lerr
-			errMutex.Unlock()
-		}
-		wg.Done()
-	}()
+		return lerr
+	})
 
-	go func() {
+	wg.Go(func() error {
 		var lerr error
 		metrics, lerr = cnt.getMetrics()
-		if lerr != nil {
-			errMutex.Lock()
-			err = lerr
-			errMutex.Unlock()
-		}
-		wg.Done()
-	}()
+		return lerr
+	})
 
-	wg.Wait()
-
-	if err != nil {
+	if err := wg.Wait(); err != nil {
 		return ApiServiceData{}, err
 	}
 
@@ -81,7 +70,7 @@ func (cnt *ApiService) GetData() (ApiServiceData, error) {
 	return data, nil
 }
 
-func (cnt *ApiService) getServerInfo() (ServerInfoResponse, error) {
+func (cnt *apiService) getServerInfo() (ServerInfoResponse, error) {
 	var data ServerInfoResponse
 	err := cnt.callEndpoint("/server", &data)
 
@@ -92,7 +81,7 @@ func (cnt *ApiService) getServerInfo() (ServerInfoResponse, error) {
 	return data, nil
 }
 
-func (cnt *ApiService) getMetrics() (MetricsResponse, error) {
+func (cnt *apiService) getMetrics() (MetricsResponse, error) {
 	var data MetricsResponse
 	err := cnt.callEndpoint("/metrics/transfer", &data)
 
@@ -103,7 +92,7 @@ func (cnt *ApiService) getMetrics() (MetricsResponse, error) {
 	return data, nil
 }
 
-func (cnt *ApiService) getAccessKeys() (AccessKeysResponse, error) {
+func (cnt *apiService) getAccessKeys() (AccessKeysResponse, error) {
 	var data AccessKeysResponse
 	err := cnt.callEndpoint("/access-keys", &data)
 
@@ -114,12 +103,18 @@ func (cnt *ApiService) getAccessKeys() (AccessKeysResponse, error) {
 	return data, nil
 }
 
-func (cnt *ApiService) callEndpoint(endpoint string, data any) error {
+func (cnt *apiService) callEndpoint(endpoint string, data any) error {
 	url := cnt.Endpoint + endpoint
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(cnt.ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return err
 	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"html/template"
 	"log"
@@ -30,9 +31,7 @@ func main() {
 
 	apiRouter := r.PathPrefix("/api").Subrouter()
 	apiRouter.Use(authMiddleware.Middleware)
-	apiController := controllers.ApiController{
-		Servers: servers,
-	}
+	apiController := controllers.NewApiController(servers, context.Background())
 	apiRouter.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {})
 	apiRouter.HandleFunc("/servers", apiController.HandleServers)
 	apiRouter.HandleFunc("/servers/{id}", apiController.HandleServersID)

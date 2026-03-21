@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -11,6 +12,12 @@ import (
 
 type ApiController struct {
 	Servers []string
+}
+
+func NewApiController(servers []string, ctx context.Context) *ApiController {
+	return &ApiController{
+		Servers: servers,
+	}
 }
 
 func (cnt *ApiController) HandleServers(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +45,7 @@ func (cnt *ApiController) HandleServersID(w http.ResponseWriter, r *http.Request
 	}
 
 	url := cnt.Servers[index]
-	controller := services.ApiService{Endpoint: url}
+	controller := services.NewApiService(url, r.Context())
 
 	data, err := controller.GetData()
 	if err != nil {

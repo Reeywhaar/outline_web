@@ -1,5 +1,5 @@
 ### build backend
-FROM golang:1.22-bookworm AS go-builder
+FROM golang:1.25-bookworm AS go-builder
 WORKDIR /app
 
 COPY ./go.mod ./
