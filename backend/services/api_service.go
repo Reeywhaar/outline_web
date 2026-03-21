@@ -11,14 +11,14 @@ import (
 )
 
 type apiService struct {
-	Endpoint string
-	ctx      context.Context
+	Base string
+	ctx  context.Context
 }
 
-func NewApiService(endpoint string, ctx context.Context) *apiService {
+func NewApiService(base string, ctx context.Context) *apiService {
 	return &apiService{
-		Endpoint: endpoint,
-		ctx:      ctx,
+		Base: base,
+		ctx:  ctx,
 	}
 }
 
@@ -104,7 +104,7 @@ func (cnt *apiService) getAccessKeys() (AccessKeysResponse, error) {
 }
 
 func (cnt *apiService) callEndpoint(endpoint string, data any) error {
-	url := cnt.Endpoint + endpoint
+	url := cnt.Base + endpoint
 	req, err := http.NewRequestWithContext(cnt.ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return err
