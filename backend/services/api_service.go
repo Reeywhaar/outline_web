@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"golang.org/x/sync/errgroup"
@@ -121,7 +121,7 @@ func (cnt *apiService) callEndpoint(endpoint string, data any) error {
 		return fmt.Errorf("failed with status %d", resp.StatusCode)
 	}
 
-	respString, err := ioutil.ReadAll(resp.Body)
+	respString, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
