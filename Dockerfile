@@ -1,5 +1,5 @@
 ### build backend
-FROM golang:1.25-bookworm AS go-builder
+FROM golang:1.25-trixie AS go-builder
 WORKDIR /app
 
 COPY ./go.mod ./
@@ -10,7 +10,7 @@ COPY ./backend ./backend
 RUN go build -o bin/main backend/main.go
 
 ### build frontend
-FROM node:22-bookworm AS frontend-builder
+FROM node:22-trixie AS frontend-builder
 WORKDIR /app
 
 COPY package*.json ./
@@ -21,7 +21,7 @@ COPY ./tsconfig.json ./tsconfig.json
 RUN npm install && npm run build:front
 
 ### Final image
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 WORKDIR /app
 
