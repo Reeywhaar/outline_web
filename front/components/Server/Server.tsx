@@ -1,10 +1,11 @@
 import React, { useEffect, useState, FunctionComponent } from "react";
 import { ServerResponse } from "@app/services/Api";
 import { useAppContext } from "@app/providers/AppContext";
-import { sleep } from "@app/utils";
+import { sleep, spawn } from "@app/utils";
 import { useVisible } from "@app/hooks/useVisible";
 
 import classes from "./Server.module.scss";
+import { useDisposableEffect } from "@app/hooks/useDisposableEffect";
 
 export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
   const [data, setData] = useState<ServerResponse | null>(null);
@@ -14,30 +15,22 @@ export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
 
   const total = data?.users.reduce((c, x) => c + x.usage, 0) ?? 0;
 
-  useEffect(() => {
+  useDisposableEffect((stack) => {
     if (!visible) return;
 
-    const getData = async (abortSignal: AbortSignal) => {
-      try {
-        setData(await api.fetchServer(id, abortSignal));
-        setError(null);
-      } catch (e) {
-        setError(e.message);
-      }
-    };
+    stack.use(spawn(async (stack) => {
+      const abortController = stack.adopt(new AbortController(), ab => ab.abort());
 
-    const abortController = new AbortController();
-
-    (async () => {
       while (!abortController.signal.aborted) {
-        await getData(abortController.signal);
-        await sleep(5000);
+        try {
+          setData(await api.fetchServer(id, abortController.signal));
+          setError(null);
+        } catch (e) {
+          setError(e.message);
+        }
+        await sleep(5000, abortController.signal);
       }
-    })();
-
-    return () => {
-      abortController.abort();
-    };
+    }))
   }, [visible]);
 
   return (

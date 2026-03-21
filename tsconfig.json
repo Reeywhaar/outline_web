@@ -2,10 +2,21 @@
   "compilerOptions": {
     "jsx": "preserve",
     "esModuleInterop": true,
+    "lib": [
+      "DOM",
+      "ESNext.Disposable",
+      "ES2024.Promise"
+    ],
     "paths": {
-      "@app/*": ["./front/*"]
+      "@app/*": [
+        "./front/*"
+      ]
     }
   },
-  "include": ["./front/**/*"],
-  "exclude": ["node_modules"]
+  "include": [
+    "./front/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
