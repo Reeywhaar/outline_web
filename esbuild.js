@@ -7,6 +7,7 @@ require("esbuild")
     outfile: "static/dist/main.js",
     watch: !!process.env.WATCH,
     sourcemap: true,
+    minify: !process.env.WATCH,
     plugins: [
       sassPlugin({
         transform: postcssModules({
