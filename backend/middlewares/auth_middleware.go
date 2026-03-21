@@ -8,23 +8,28 @@ import (
 	"net/http"
 )
 
-type AuthMiddleware struct {
+type authMiddleware struct {
 	authEndpoint string
 	PasswordHash string
 	tokens       map[string]bool
 }
 
-func (amw *AuthMiddleware) Init(authEndpoint string, password string) {
-	amw.tokens = make(map[string]bool)
-	amw.authEndpoint = authEndpoint
+func NewAuthMiddleware(authEndpoint string, password string) *authMiddleware {
+	passwordHash := ""
 
 	if password != "" {
 		pass_bytes := sha256.Sum256([]byte(password))
-		amw.PasswordHash = hex.EncodeToString(pass_bytes[:])
+		passwordHash = hex.EncodeToString(pass_bytes[:])
+	}
+
+	return &authMiddleware{
+		authEndpoint: authEndpoint,
+		tokens:       make(map[string]bool),
+		PasswordHash: passwordHash,
 	}
 }
 
-func (amw *AuthMiddleware) Middleware(next http.Handler) http.Handler {
+func (amw *authMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == amw.authEndpoint {
 			amw.handleAuth(w, r)
@@ -48,7 +53,7 @@ func (amw *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 	})
 }
 
-func (amw *AuthMiddleware) handleAuth(w http.ResponseWriter, r *http.Request) {
+func (amw *authMiddleware) handleAuth(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		jsonError("Method not allowed", w, http.StatusMethodNotAllowed)
 		return
@@ -66,7 +71,7 @@ func (amw *AuthMiddleware) handleAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authToken := randStringRunes(64)
+	authToken := NewIdGenerator().generate(64)
 	amw.tokens[authToken] = true
 
 	http.SetCookie(w, &http.Cookie{
@@ -79,11 +84,11 @@ func (amw *AuthMiddleware) handleAuth(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"success": true}`))
 }
 
-func (amw *AuthMiddleware) tokenValid(token string) bool {
+func (amw *authMiddleware) tokenValid(token string) bool {
 	return amw.tokens[token]
 }
 
-func (amw *AuthMiddleware) parseToken(r *http.Request) (string, error) {
+func (amw *authMiddleware) parseToken(r *http.Request) (string, error) {
 	cookie, err := r.Cookie("outline__auth")
 	if err != nil {
 		return "", err
@@ -98,12 +103,20 @@ func jsonError(message string, w http.ResponseWriter, status int) {
 	http.Error(w, string(data), status)
 }
 
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+type idGenerator struct {
+	runes []rune
+}
 
-func randStringRunes(n int) string {
+func NewIdGenerator() *idGenerator {
+	return &idGenerator{
+		runes: []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"),
+	}
+}
+
+func (tg *idGenerator) generate(n int) string {
 	b := make([]rune, n)
 	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+		b[i] = tg.runes[rand.Intn(len(tg.runes))]
 	}
 	return string(b)
 }

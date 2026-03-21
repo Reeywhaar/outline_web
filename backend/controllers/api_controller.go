@@ -10,17 +10,17 @@ import (
 	"github.com/reeywhaar/outline_web/backend/services"
 )
 
-type ApiController struct {
+type apiController struct {
 	Servers []string
 }
 
-func NewApiController(servers []string, ctx context.Context) *ApiController {
-	return &ApiController{
+func NewApiController(servers []string, ctx context.Context) *apiController {
+	return &apiController{
 		Servers: servers,
 	}
 }
 
-func (cnt *ApiController) HandleServers(w http.ResponseWriter, r *http.Request) {
+func (cnt *apiController) HandleServers(w http.ResponseWriter, r *http.Request) {
 	jsd, err := json.Marshal(makeRange(0, len(cnt.Servers)-1))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -31,7 +31,7 @@ func (cnt *ApiController) HandleServers(w http.ResponseWriter, r *http.Request) 
 	w.Write(jsd)
 }
 
-func (cnt *ApiController) HandleServersID(w http.ResponseWriter, r *http.Request) {
+func (cnt *apiController) HandleServersID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	index, err := strconv.Atoi(vars["id"])
 	if err != nil {

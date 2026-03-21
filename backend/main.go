@@ -22,8 +22,7 @@ func main() {
 
 	r := mux.NewRouter()
 
-	authMiddleware := middlewares.AuthMiddleware{}
-	authMiddleware.Init("/api/auth", os.Getenv("ADMIN_PASSWORD"))
+	authMiddleware := middlewares.NewAuthMiddleware("/api/auth", os.Getenv("ADMIN_PASSWORD"))
 
 	r.HandleFunc("/", handleMain)
 
