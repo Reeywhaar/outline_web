@@ -12,8 +12,7 @@ export function useVisible() {
     document.addEventListener("visibilitychange", handleChange);
     stack.defer(() => {
       document.removeEventListener("visibilitychange", handleChange);
-    })
-
+    });
   }, []);
 
   return visible;

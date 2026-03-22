@@ -1,11 +1,11 @@
 const { sassPlugin, postcssModules } = require("esbuild-sass-plugin");
+const esbuild = require("esbuild");
 
-require("esbuild")
-  .build({
+async function main() {
+  const options = {
     entryPoints: ["front/index.tsx"],
     bundle: true,
     outfile: "static/dist/main.js",
-    watch: !!process.env.WATCH,
     sourcemap: true,
     minify: !process.env.WATCH,
     plugins: [
@@ -15,5 +15,16 @@ require("esbuild")
         }),
       }),
     ],
-  })
-  .catch(() => process.exit(1));
+  };
+  if (process.env.WATCH) {
+    const ctx = await esbuild.context(options);
+
+    await ctx.watch();
+  } else {
+    await esbuild.build(options)
+  };
+}
+
+main().catch((e) => {
+  console.error(e);
+});

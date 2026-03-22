@@ -9,6 +9,7 @@
     "build:front": "node esbuild.js",
     "watch:front": "WATCH=1 node esbuild.js",
     "format:front": "prettier --write front",
+    "tscheck": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,17 +17,17 @@
   "license": "ISC",
   "dependencies": {
     "@aws-crypto/sha256-browser": "^5.2.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@types/react": "^17.0.40",
-    "esbuild": "^0.14.27",
-    "esbuild-sass-plugin": "^2.2.5",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "esbuild": "^0.27.4",
+    "esbuild-sass-plugin": "^3.7.0",
     "postcss": "^8.4.12",
-    "postcss-modules": "^4.3.1",
-    "prettier": "^2.6.0",
-    "webpack": "^5.70.0",
-    "webpack-cli": "^4.9.2"
+    "postcss-modules": "^6.0.1",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3"
   }
 }

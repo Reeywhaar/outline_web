@@ -15,23 +15,30 @@ export const Server: FunctionComponent<{ id: number }> = ({ id }) => {
 
   const total = data?.users.reduce((c, x) => c + x.usage, 0) ?? 0;
 
-  useDisposableEffect((stack) => {
-    if (!visible) return;
+  useDisposableEffect(
+    (stack) => {
+      if (!visible) return;
 
-    stack.use(spawn(async (stack) => {
-      const abortController = stack.adopt(new AbortController(), ab => ab.abort());
+      stack.use(
+        spawn(async (stack) => {
+          const abortController = stack.adopt(new AbortController(), (ab) =>
+            ab.abort(),
+          );
 
-      while (!abortController.signal.aborted) {
-        try {
-          setData(await api.fetchServer(id, abortController.signal));
-          setError(null);
-        } catch (e) {
-          setError(e.message);
-        }
-        await sleep(5000, abortController.signal);
-      }
-    }))
-  }, [visible]);
+          while (!abortController.signal.aborted) {
+            try {
+              setData(await api.fetchServer(id, abortController.signal));
+              setError(null);
+            } catch (e) {
+              setError(e.message);
+            }
+            await sleep(5000, abortController.signal);
+          }
+        }),
+      );
+    },
+    [visible],
+  );
 
   return (
     <div className={classes.root}>

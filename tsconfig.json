@@ -2,8 +2,10 @@
   "compilerOptions": {
     "jsx": "preserve",
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "lib": [
       "DOM",
+      "ES2024",
       "ESNext.Disposable",
       "ES2024.Promise"
     ],

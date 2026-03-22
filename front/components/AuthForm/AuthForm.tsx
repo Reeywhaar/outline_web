@@ -11,7 +11,7 @@ export const AuthForm: FunctionComponent<{
     (e: { target: { value: string } }) => {
       setPassword(e.target.value);
     },
-    []
+    [],
   );
 
   const handleSubmit = useCallback(
@@ -19,7 +19,7 @@ export const AuthForm: FunctionComponent<{
       e.preventDefault?.();
       onSubmit({ password });
     },
-    [password]
+    [password],
   );
 
   return (
